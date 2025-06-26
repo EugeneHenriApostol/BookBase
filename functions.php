@@ -7,12 +7,13 @@ function check_login($conn) {
     // check if session value is set
     if(isset($_SESSION['user_id'])) {
         $user = $_SESSION['user_id'];
-        $query = "SELECT * FROM users WHERE user_id = '$user' LIMIT 1";
 
         // read the database
-        $result = mysqli_query($conn, $query);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $user_data = mysqli_fetch_assoc($result);
+        $stmt = $conn->prepare("SELECT * FROM users WHERE user_id = :user_id LIMIT 1");
+        $stmt->execute(['user_id' => $user]);
+        $user_data = $stmt->fetch();
+
+        if ($user_data) {
             return $user_data;
         }
     }

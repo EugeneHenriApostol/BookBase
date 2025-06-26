@@ -27,11 +27,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // validate, check if email already exists
-        $check_email_query = "SELECT * FROM users WHERE email = '$email' LIMIT 1";
-        $check_result = mysqli_query($conn, $check_email_query);
-
-        if (mysqli_num_rows($check_result) > 0) {
-            $error = "An account with that email already exists";
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+        $stmt->execute(['email' => $email]);
+        if ($stmt->rowCount() > 0) {
+            $error = "Email already exists.";
         }
 
 
@@ -42,13 +41,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             // save to database
-            $query = "INSERT into users (user_id, first_name, last_name, email, password) values ('$user_id', '$first_name', '$last_name', '$email', '$hashed_password')";
-            if (mysqli_query($conn,$query)) {
-                header("Location: login.php");
-                exit;
-            } else {
-                $error = "Database Error". mysqli_error($conn);
-            }
+            $stmt = $conn->prepare("INSERT INTO users (user_id, first_name, last_name, email, password)
+            VALUES (:user_id, :first_name, :last_name, :email, :password)");
+
+            $stmt->execute([
+                'user_id' => $user_id,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'email'=> $email,
+                'password'=> $hashed_password,
+            ]);
+
+            header("Location: login.php");
+            exit;
         }
     } else {   
         $error = "Please enter valid information and make sure passwords match";

@@ -13,23 +13,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST["password"];
 
     if (!empty($email) && !empty($password)) {
-        //query to the database
-        $query = "SELECT * FROM users WHERE email = '$email' LIMIT 1";
-        $result = mysqli_query($conn, $query);
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+        $stmt->execute(['email' => $email]);
+        $user_data = $stmt->fetch();
 
-        if ($result && mysqli_num_rows($result) > 0) {
-            $user_data = mysqli_fetch_assoc($result);
-
-            // check password using password verify
-            if (password_verify($password, $user_data["password"])) {
-                // password is correct, set session
-                $_SESSION["user_id"] =  $user_data["user_id"];
-                header("Location: dashboard.php");
-                exit;   
-            } else {
-                $error = "Incorrect email or password";
-            }
-        } else  {
+        if ($user_data && password_verify($password, $user_data["password"])) {
+            $_SESSION["user_id"] = $user_data["user_id"];
+            header("Location: dashboard.php");
+            exit;
+        } else {
             $error = "Incorrect email or password";
         }
     } else {
