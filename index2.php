@@ -1,14 +1,6 @@
 <?php
 //index.php
 
-session_start();
-
-include "connection.php";
-include "functions.php";
-
-if (isset($_SESSION["user_id"])) {
-    header("Location: dashboard.php");
-}
 
 ?>
 
